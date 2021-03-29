@@ -55,7 +55,7 @@ function preload()
     const blocked =  map.createLayer('blocked', tileset, 0, 0).setScale(3)
     const blockedaboveplayer =  map.createLayer('blockedaboveplayer', tileset, 0, 0).setScale(3)    
     coinLayer = map.getObjectLayer('coins')['objects']
-    enemyLayer = map.getObjectLayer('enemies')['objects']
+    //enemyLayer = map.getObjectLayer('enemies')['objects']
     blocked.setCollisionByProperty({ collides: true})
     blockedaboveplayer.setCollisionByProperty({ collides: true})
 
@@ -69,25 +69,30 @@ function preload()
          //obj.setSize(25,25).setOffset(18, 15)
     })
 
-     enemies = this.physics.add.group();
-    // enemies.enableBody = true;
+     
+    
+      enemies = this.add.group()
+  map
+  .filterObjects('enemies', (object) => object.type === 'enemy')
+  .forEach((enemy) => {
+    let enemySprite = this.physics.add.sprite(enemy.x * 2.75, enemy.y * 3, 'enemy')
+    //enemySprite.id = enemy.id // I don't know if you have some sort of id you can pass here
+    enemies.add(enemySprite)
+  })
+this.physics.add.collider(enemies, blocked)
+this.physics.add.collider(enemies, blockedaboveplayer)
+     // enemies.enableBody = true;
 
-    enemyLayer.forEach(object => {
-      let obj = enemies.create(object.x * 2.75, object.y * 3, 'enemy'); 
-         obj.setOrigin(0); 
-         obj.body.width = object.width; 
-         obj.body.height = object.height;
-         obj.setSize(10,25).setOffset(18, 15)})
-         enemies.getChildren().forEach((enemy) => enemy.setScale(0.45).setSize(50, 90))
+    // enemyLayer.forEach(object => {
+    //   let obj = enemies.create(object.x * 2.75, object.y * 3, 'enemy'); 
+    //      obj.setOrigin(0); 
+    //      obj.body.width = object.width; 
+    //      obj.body.height = object.height;
+    //      obj.setSize(10,25).setOffset(18, 15)})
+          enemies.getChildren().forEach((enemy) => enemy.setScale(0.45).setSize(50, 90))
 
          
-        //  this.anims,create({
-        //    key:'walk',
-        //    frames: this.anims.generateFrameNumbers('enemy', { start: 11, end: 12 }),
-        //    frameRate: 10,
-        //    repeat: -1
-        //  });
-
+         
        this.anims.create({
           key: 'spin',
           frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 7 }),
@@ -130,6 +135,7 @@ function preload()
       });
       cursors = this.input.keyboard.createCursorKeys();
       
+      
       player.setCollideWorldBounds(true)
       this.physics.add.collider(player, blocked)
       this.physics.add.collider(player, blockedaboveplayer)
@@ -144,6 +150,12 @@ function preload()
       // });
       // text.setScrollFactor(0);
       
+      this.anims.create({
+        key:'walk',
+        frames: this.anims.generateFrameNumbers('enemy', { start: 11, end: 12 }),
+        frameRate: 2,
+        repeat: -1
+      });
 
   }
 
@@ -180,7 +192,10 @@ function preload()
   }
 
   coins.getChildren().forEach((coin) => coin.anims.play( 'spin', true))
-  // enemies.getChildren().forEach((enemy) => enemy.anims.play( 'walk', true))
+  
+  
+   enemies.getChildren().forEach((enemy) => { enemy.anims.play( 'walk', true);
+   movement() })
   // function setupEnemies(enemy){ 
   //   if (enemy.name == 'enemy'){ enemy.scale.setTo(0.6,0.6);     
   //        enemy.animations.add('walk', [0,1,2,3,4,3,2,1], 10, true);      
@@ -201,3 +216,27 @@ function collectCoin(player, coin) {
   // text.setText(`Coins: ${coinScore}x`); // set the text to show the current score
   return false;
 }
+
+function movement() {
+  switch (this.direction) {
+      case -1:
+           // Move left
+          if (this.x > this.fminX) {
+              this.setVelocityX(-45);
+          } else {
+             // Hit left bounds, change direction
+              this.direction = 1;
+          }
+          break;
+
+      case 1:
+          // Move right
+          if (this.x < this.fmaxX) {
+              this.setVelocityX(45);
+          } else {
+              //  Hit rightbounds, change direction
+              this.direction = -1;
+          }
+          break;
+  }
+} 
