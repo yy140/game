@@ -19,13 +19,19 @@ var config = {
 
 var game = new Phaser.Game(config);
 var player
+var coins
+var coinLayer
 function preload() 
   {
     // load the PNG file
     this.load.image('tiles', '/assets/game3/rogue.png')
   
     // load the JSON file
-    this.load.tilemapTiledJSON('tilemap', '/assets/game3/levelOne.json')
+    this.load.tilemapTiledJSON('tilemap', '../assets/game3/levelOne.json' )
+    this.load.spritesheet('coin', '/assets/game3/coin.png', {
+      frameWidth: 32,
+      frameHeight: 32
+    }) 
     player = this.load.spritesheet('boy', '/assets/game3/boy.png', {
       frameWidth: 80,
       frameHeight: 110
@@ -42,11 +48,34 @@ function preload()
     const background = map.createLayer('background', tileset, 0, 0).setScale(3)
     const blocked =  map.createLayer('blocked', tileset, 0, 0).setScale(3)
     const blockedaboveplayer =  map.createLayer('blockedaboveplayer', tileset, 0, 0).setScale(3)    
-  
-      blocked.setCollisionByProperty({ collides: true})
-      blockedaboveplayer.setCollisionByProperty({ collides: true})
+    coinLayer = map.getObjectLayer('coins')['objects']
+    blocked.setCollisionByProperty({ collides: true})
+    blockedaboveplayer.setCollisionByProperty({ collides: true})
 
-        player = this.physics.add.sprite(100, 450, 'boy').setScale(0.4);
+    coins = this.physics.add.staticGroup()
+
+    coinLayer.forEach(object => {
+      let obj = coins.create(object.x * 2.75, object.y * 3, 'coin'); 
+         obj.setOrigin(0); 
+         obj.body.width = object.width; 
+         obj.body.height = object.height;
+         obj.setSize(25,25).setOffset(18, 15)
+    
+      //    coins.forEach(function(coins){
+      //     diamond.body.immovable = true;
+      //     diamond.animations.add('spin', [4, 5, 6, 7, 6, 5], 6, true);
+      //     diamond.animations.play('spin');
+      // });
+    });
+       this.anims.create({
+          key: 'spin',
+          frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 7 }),
+          frameRate: 10,
+          repeat: -1
+        });
+            
+
+        player = this.physics.add.sprite(100, 680, 'boy').setScale(0.4);
         this.anims.create({
         key: 'left',
         frames: this.anims.generateFrameNumbers('boy', { start: 0, end: 3 }),
@@ -83,15 +112,20 @@ function preload()
       player.setCollideWorldBounds(true)
       this.physics.add.collider(player, blocked)
       this.physics.add.collider(player, blockedaboveplayer)
-      // this.physics.world.bounds.width = 240
-      // this.physics.world.bounds.height = 240
-      // this.cameras.main.setBounds(0, 0, 400, 320)
-      // this.cameras.main.startFollow(player, true, 0.8, 0.8)
+      //this.physics.add.collider(player, coinLayer)
+      this.physics.add.overlap(player, coins, collectCoin, null, this)
+
+      //add a score
+      // text = this.add.text(570, 70, `Coins: ${coinScore}x`, {
+      //   fontSize: '20px',
+      //   fill: '#ffffff'
+      // });
+      // text.setScrollFactor(0);
       
 
-    }
+  }
 
-function update()
+  function update()
 {
   if (cursors.left.isDown){
     player.setVelocityX(-160);
@@ -123,4 +157,14 @@ function update()
     player.setVelocityY(-330);
   }
 
+  coins.getChildren().forEach((coin) => coin.anims.play( 'spin', true)
+  )
+
+}
+
+function collectCoin(player, coin) {
+  coin.destroy(coin.x, coin.y); // remove the tile/coin
+  // coinScore ++; // increment the score
+  // text.setText(`Coins: ${coinScore}x`); // set the text to show the current score
+  return false;
 }
