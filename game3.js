@@ -66,7 +66,7 @@ function preload()
          obj.setOrigin(0); 
          obj.body.width = object.width; 
          obj.body.height = object.height;
-         //obj.setSize(25,25).setOffset(18, 15)
+         obj.setSize(25,25).setOffset(18, 15)
     })
 
      
@@ -76,13 +76,14 @@ function preload()
   .filterObjects('enemies', (object) => object.type === 'enemy')
   .forEach((enemy) => {
     let enemySprite = this.physics.add.sprite(enemy.x * 2.75, enemy.y * 3, 'enemy')
+    enemySprite.body.setImmovable(true)
     //enemySprite.id = enemy.id // I don't know if you have some sort of id you can pass here
     enemies.add(enemySprite)
   })
 this.physics.add.collider(enemies, blocked)
 this.physics.add.collider(enemies, blockedaboveplayer)
-     // enemies.enableBody = true;
-
+      enemies.enableBody = true;
+     // enemies.body.setImmovable(true)
     // enemyLayer.forEach(object => {
     //   let obj = enemies.create(object.x * 2.75, object.y * 3, 'enemy'); 
     //      obj.setOrigin(0); 
