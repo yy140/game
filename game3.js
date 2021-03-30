@@ -102,7 +102,7 @@ this.physics.add.collider(enemies, blockedaboveplayer)
         });
             
 
-        player = this.physics.add.sprite(100, 680, 'boy').setScale(0.4);
+        player = this.physics.add.sprite(100, 680, 'boy').setScale(0.4).setSize(50,100);
         this.anims.create({
         key: 'left',
         frames: this.anims.generateFrameNumbers('boy', { start: 0, end: 3 }),
@@ -196,7 +196,7 @@ this.physics.add.collider(enemies, blockedaboveplayer)
   
   
    enemies.getChildren().forEach((enemy) => { enemy.anims.play( 'walk', true);
-   movement() })
+   })
   // function setupEnemies(enemy){ 
   //   if (enemy.name == 'enemy'){ enemy.scale.setTo(0.6,0.6);     
   //        enemy.animations.add('walk', [0,1,2,3,4,3,2,1], 10, true);      
@@ -218,26 +218,26 @@ function collectCoin(player, coin) {
   return false;
 }
 
-function movement() {
-  switch (this.direction) {
-      case -1:
-           // Move left
-          if (this.x > this.fminX) {
-              this.setVelocityX(-45);
-          } else {
-             // Hit left bounds, change direction
-              this.direction = 1;
-          }
-          break;
+// function movement() {
+//   switch (this.direction) {
+//       case -1:
+//            // Move left
+//           if (this.x > this.fminX) {
+//               this.setVelocityX(-45);
+//           } else {
+//              // Hit left bounds, change direction
+//               this.direction = 1;
+//           }
+//           break;
 
-      case 1:
-          // Move right
-          if (this.x < this.fmaxX) {
-              this.setVelocityX(45);
-          } else {
-              //  Hit rightbounds, change direction
-              this.direction = -1;
-          }
-          break;
-  }
-} 
+//       case 1:
+//           // Move right
+//           if (this.x < this.fmaxX) {
+//               this.setVelocityX(45);
+//           } else {
+//               //  Hit rightbounds, change direction
+//               this.direction = -1;
+//           }
+//           break;
+//   }
+// } 
