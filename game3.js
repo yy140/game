@@ -90,7 +90,7 @@ this.physics.add.collider(enemies, blockedaboveplayer)
     //      obj.body.width = object.width; 
     //      obj.body.height = object.height;
     //      obj.setSize(10,25).setOffset(18, 15)})
-          enemies.getChildren().forEach((enemy) => enemy.setScale(0.45).setSize(50, 90))
+          enemies.getChildren().forEach((enemy) => enemy.setScale(0.45).setSize(60, 90).setOffset(0,25))
 
          
          
