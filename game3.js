@@ -23,6 +23,7 @@ var coins
 var coinLayer
 var enemies
 var enemyLayer
+var gameOver = false
 
 function preload() 
   {
@@ -71,29 +72,34 @@ function preload()
 
      
     
-      enemies = this.add.group()
+  enemies = this.add.group()
   map
   .filterObjects('enemies', (object) => object.type === 'enemy')
   .forEach((enemy) => {
     let enemySprite = this.physics.add.sprite(enemy.x * 2.75, enemy.y * 3, 'enemy')
     enemySprite.body.setImmovable(true)
+    enemySprite.setCollideWorldBounds(true)
+    this.physics.add.collider(enemySprite, blocked)
+    this.physics.add.collider(enemySprite, blockedaboveplayer)
+    enemySprite.setVelocityX(getRandomNumber() * 1.25 )
+    enemySprite.setVelocityY(getRandomNumber() * 1.25)
     //enemySprite.id = enemy.id // I don't know if you have some sort of id you can pass here
     enemies.add(enemySprite)
   })
-this.physics.add.collider(enemies, blocked)
-this.physics.add.collider(enemies, blockedaboveplayer)
-      enemies.enableBody = true;
-     // enemies.body.setImmovable(true)
-    // enemyLayer.forEach(object => {
-    //   let obj = enemies.create(object.x * 2.75, object.y * 3, 'enemy'); 
-    //      obj.setOrigin(0); 
-    //      obj.body.width = object.width; 
-    //      obj.body.height = object.height;
-    //      obj.setSize(10,25).setOffset(18, 15)})
-          enemies.getChildren().forEach((enemy) => enemy.setScale(0.45).setSize(60, 90).setOffset(0,25))
+enemies.enableBody = true;
+     
+enemies.getChildren().forEach((enemy) => enemy.setScale(0.45).setSize(60, 90).setOffset(0,25))
 
-         
-         
+gameOverText = this.add.text(400, 300, "         Game Over\n Click here to try again!", { fontSize: '32px', fill: '#000'});
+gameOverText.setOrigin(0.5).setInteractive();
+gameOverText.visible = false
+gameOverText.on('pointerdown', () => { 
+  gameOver = false;
+  this.registry.destroy(); // destroy registry
+  this.events.off(); // disable all active events
+  this.scene.restart(); // restart current scen
+});
+
        this.anims.create({
           key: 'spin',
           frames: this.anims.generateFrameNumbers('coin', { start: 0, end: 7 }),
@@ -101,7 +107,6 @@ this.physics.add.collider(enemies, blockedaboveplayer)
           repeat: -1
         });
             
-
         player = this.physics.add.sprite(100, 680, 'boy').setScale(0.4).setSize(50,100);
         this.anims.create({
         key: 'left',
@@ -113,7 +118,7 @@ this.physics.add.collider(enemies, blockedaboveplayer)
       this.anims.create({
         key: 'turn',
         frames: [ { key: 'boy', frame: 23 } ],
-        frameRate: 20
+        frameRate: 0
       });
     
       this.anims.create({
@@ -141,9 +146,14 @@ this.physics.add.collider(enemies, blockedaboveplayer)
       this.physics.add.collider(player, blocked)
       this.physics.add.collider(player, blockedaboveplayer)
       //this.physics.add.collider(player, coinLayer)
-      this.physics.add.collider(player, enemies)
+      this.physics.add.collider(player, enemies, enemyStrike, null, this)
       this.physics.add.overlap(player, coins, collectCoin, null, this)
+      
 
+
+      // enemies.getChildren().forEach((enemy) => { 
+      //   this.physics.add.collider(enemy, blocked)
+      //   this.physics.add.collider(enemy, blockedaboveplayer) })
       //add a score
       // text = this.add.text(570, 70, `Coins: ${coinScore}x`, {
       //   fontSize: '20px',
@@ -161,6 +171,7 @@ this.physics.add.collider(enemies, blockedaboveplayer)
   }
 
   function update()
+  
 {
   if (cursors.left.isDown){
     player.setVelocityX(-160);
@@ -197,47 +208,35 @@ this.physics.add.collider(enemies, blockedaboveplayer)
   
    enemies.getChildren().forEach((enemy) => { enemy.anims.play( 'walk', true);
    })
-  // function setupEnemies(enemy){ 
-  //   if (enemy.name == 'enemy'){ enemy.scale.setTo(0.6,0.6);     
-  //        enemy.animations.add('walk', [0,1,2,3,4,3,2,1], 10, true);      
-  //          enemy.animations.play('walk');       
-  //           enemy.body.setCircle(16);     
-  //             enemy.body.y += 26      
-  //               enemy.health=10;       
-  //                 enemy.body.fixedRotation=true;     
-  //                    enemy.body.allowSleep=true;        
-  //   enemy.body.setCollisionGroup(enemyGroundCG);       
-  //  enemy.body.collides([playerCG,fireballCG,groundCG,enemyboundsCG]);    }}
 
+   moveZombies()
 }
 
 function collectCoin(player, coin) {
   coin.destroy(coin.x, coin.y); // remove the tile/coin
   // coinScore ++; // increment the score
   // text.setText(`Coins: ${coinScore}x`); // set the text to show the current score
-  return false;
+  return false
+
 }
 
-// function movement() {
-//   switch (this.direction) {
-//       case -1:
-//            // Move left
-//           if (this.x > this.fminX) {
-//               this.setVelocityX(-45);
-//           } else {
-//              // Hit left bounds, change direction
-//               this.direction = 1;
-//           }
-//           break;
+function enemyStrike() {
+  this.physics.pause();
 
-//       case 1:
-//           // Move right
-//           if (this.x < this.fmaxX) {
-//               this.setVelocityX(45);
-//           } else {
-//               //  Hit rightbounds, change direction
-//               this.direction = -1;
-//           }
-//           break;
-//   }
-// } 
+  player.setTint(0xff0000);
+
+  player.anims.play('turn');
+    gameOver = true;
+
+  gameOverText.visible = true;
+}
+
+function moveZombies() {
+  enemies.getChildren().forEach((enemy) => { 
+  enemy.setVelocityX(enemy.body.velocity.x + getRandomNumber())
+  enemy.setVelocityY(enemy.body.velocity.y + getRandomNumber())
+});
+}
+function getRandomNumber() {
+  return (Math.random() - 0.5) * 5
+}
